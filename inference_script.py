@@ -80,7 +80,11 @@ def load_model(weights_path, device):
     Loads model checkpoint and restores weights.
     """
     print(f"Loading weights from {weights_path}...")
-    checkpoint = torch.load(weights_path, map_location=device)
+    try:
+        checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
+    except TypeError:
+        # Compatibility fallback for older PyTorch versions that do not accept weights_only
+        checkpoint = torch.load(weights_path, map_location=device)
 
     # Detect model name & state dict
     if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
@@ -196,3 +200,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
