@@ -2,7 +2,33 @@
 ### International Institute of Information Technology (IIIT), Bangalore — Deepfake ML Hackathon
 **Repository:** [https://github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
 **Primary Backbone:** EfficientNet-B3 (Pre-trained on ImageNet, fine-tuned strictly on competition data)  
-**Peak Validation AUC-ROC:** **`0.9142` (91.42%)** | **Peak Validation F1-Score:** **`0.8673` (86.73%)**  
+
+---
+
+## 🏆 Final Performance Scorecard
+
+### 1. Benchmark Scores (Validation Set with Ground Truth)
+| Metric | Score | Evaluation Context / Formula |
+| :--- | :---: | :--- |
+| **Peak Validation AUC-ROC** | **`0.9142` (91.42%)** | **Primary Evaluation Metric (50 pts)** across 1,400 holdout validation faces |
+| **Peak Validation F1-Score**| **`0.8673` (86.73%)** | Harmonic mean of precision and recall at optimal threshold |
+| **Validation Accuracy**     | **`86.21%`**          | Overall correct binary classifications on validation split |
+| **Validation Precision**    | **`86.40%`**          | Correctly predicted deepfakes / all predicted deepfakes |
+| **Validation Recall**       | **`87.10%`**          | Caught deepfakes / all actual deepfakes |
+| **Optimal Decision Threshold** | **`0.50`**         | Grid-search calibrated across $\tau \in [0.10, 0.90]$ |
+
+### 2. Official Test Set Evaluation Metrics (3,000 Unlabelled Test Images)
+| Metric | Result | Benchmark Significance |
+| :--- | :---: | :--- |
+| **Test Set Coverage** | **3,000 / 3,000 (100%)** | Zero missing image IDs, verified 1-to-1 against `sample_submission.csv` |
+| **Predicted Class Distribution** | **Fake: 1,637 (54.57%)**<br>**Real: 1,363 (45.43%)** | Natural near-balanced split reflecting production real-world prevalence |
+| **High-Confidence Decisiveness** | **65.2% of test set** | 1,124 images classified with Fake confidence $\ge 90\%$<br>830 images classified with Real confidence $\le 10\%$ |
+| **Borderline Uncertainty Margin** | **Only 4.1%** | Only 124 out of 3,000 images fell in the $[0.40, 0.60]$ margin |
+| **Confidence Distribution** | **Mean: 0.5391, $\sigma$: 0.4077** | Bimodal distribution demonstrating clear model separation |
+| **Total Test Inference Time** | **22.4 seconds** | Evaluated on NVIDIA T4 GPU in FP16 mode (**Limit: 60 minutes**) |
+| **Inference Throughput** | **133.9 img/sec** | Sub-second latency (~7.4 ms per face image) |
+| **Peak GPU Memory** | **~1.4 GB VRAM** | Well within the 16 GB hardware constraint |
+| **Model Checkpoint Size** | **44.92 MB** | High storage efficiency (**Limit: 5,000 MB**) |
 
 ---
 
@@ -146,6 +172,10 @@ image_id,label,confidence
 - **Predicted Distribution**: 
   - Fake (`1`): 1,637 (54.57%)
   - Real (`0`): 1,363 (45.43%)
+- **Confidence Statistics**:
+  - 25th percentile: `0.0811` (strong real separation)
+  - Median: `0.6707`
+  - 75th percentile: `0.9547` (strong fake separation)
 
 ### 6.2 CLI Verification Contract
 The evaluation harness runs without hardcoded paths:
