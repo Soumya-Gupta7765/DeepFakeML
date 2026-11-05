@@ -105,10 +105,10 @@ def load_model(weights_path, device):
 
 
 @torch.inference_mode()
-def run_inference(test_dir, weights_path, output_path, batch_size=64, num_workers=2):
+def run_inference(test_dir, weights_path, output_path, batch_size=64, num_workers=2, use_tta=True):
     # Determine compute device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Running inference on device: {device}")
+    print(f"Running inference on device: {device} | TTA (Test-Time Augmentation): {use_tta}")
 
     # Gather test images
     valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
@@ -130,7 +130,6 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
 
     # Create dataset & loader
     dataset = TestImageDataset(image_files, image_size=224)
-    # Windows CPU DataLoader often works best with num_workers=0 to avoid multiprocessing overhead
     if os.name == "nt" or device.type == "cpu":
         num_workers = 0
 
@@ -150,8 +149,18 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
     for images, ids in tqdm(dataloader, desc="Inference"):
         images = images.to(device, non_blocking=True)
         with torch.cuda.amp.autocast(enabled=use_amp):
-            logits = model(images)
-            probs = torch.sigmoid(logits).squeeze(-1)
+            # Pass 1: Original Image
+            logits_orig = model(images)
+            probs_orig = torch.sigmoid(logits_orig).squeeze(-1)
+
+            if use_tta:
+                # Pass 2: Horizontally Flipped Image
+                images_flipped = torch.flip(images, dims=[-1])
+                logits_flip = model(images_flipped)
+                probs_flip = torch.sigmoid(logits_flip).squeeze(-1)
+                probs = (probs_orig + probs_flip) / 2.0
+            else:
+                probs = probs_orig
 
         all_image_ids.extend(ids)
         all_confidences.extend(probs.cpu().numpy().tolist())
@@ -188,13 +197,15 @@ def main():
     parser.add_argument("--weights", required=True, help="Path to model weight file (.pt)")
     parser.add_argument("--output", default="predictions.csv", help="Output CSV path (default: predictions.csv)")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for inference (default: 64)")
+    parser.add_argument("--no_tta", action="store_true", help="Disable Test-Time Augmentation (TTA)")
     args = parser.parse_args()
 
     run_inference(
         test_dir=args.test_dir,
         weights_path=args.weights,
         output_path=args.output,
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        use_tta=(not args.no_tta)
     )
 
 
