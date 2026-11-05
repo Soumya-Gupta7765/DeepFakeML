@@ -1,0 +1,35 @@
+{
+  "dataset": {
+    "total_train_images": 7000,
+    "real_images": 3478,
+    "fake_images": 3522,
+    "test_images": 3000,
+    "class_balance_percent": {
+      "real": 49.69,
+      "fake": 50.31
+    },
+    "resolution": "224x224",
+    "channels": "RGB (3-channel)"
+  },
+  "file_size_kb": {
+    "real_mean": 13.68,
+    "fake_mean": 13.44,
+    "test_mean": 12.07
+  },
+  "sharpness_laplacian_var": {
+    "real_mean": 782.52,
+    "fake_mean": 1014.95
+  },
+  "color_channel_means": {
+    "real": {
+      "R": 132.4,
+      "G": 111.67,
+      "B": 103.49
+    },
+    "fake": {
+      "R": 129.84,
+      "G": 113.96,
+      "B": 106.0
+    }
+  }
+}
