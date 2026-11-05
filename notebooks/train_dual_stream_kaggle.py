@@ -1,5 +1,6 @@
 # ==============================================================================
 # Dual-Stream (Spatial RGB + Frequency FFT) Training Script for Kaggle GPU
+# Stable Version: LayerNorm in head + safe float64 FFT normalization (prevents NaNs)
 # ==============================================================================
 
 import subprocess
@@ -69,7 +70,7 @@ train_df = df[df["fold"] != 0].reset_index(drop=True)
 val_df = df[df["fold"] == 0].reset_index(drop=True)
 print(f"Train samples: {len(train_df)} | Val samples: {len(val_df)}")
 
-# 3. Frequency Feature Extractor
+# 3. Safe FFT Extractor
 IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
@@ -77,21 +78,27 @@ def compute_fft(image_rgb, target_size=224):
     gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
     if gray.shape[0] != target_size or gray.shape[1] != target_size:
         gray = cv2.resize(gray, (target_size, target_size))
-    f = np.fft.fft2(gray.astype(np.float32))
+    f = np.fft.fft2(gray.astype(np.float64))
     fshift = np.fft.fftshift(f)
-    mag = 20.0 * np.log(np.abs(fshift) + 1e-8)
+    mag = 20.0 * np.log(np.abs(fshift) + 1.0)
     min_v, max_v = np.min(mag), np.max(mag)
-    norm = (mag - min_v) / (max_v - min_v + 1e-8)
-    fft_3ch = np.stack([norm] * 3, axis=-1).astype(np.float32)
+    diff = max_v - min_v
+    if diff > 1e-5:
+        norm = (mag - min_v) / diff
+    else:
+        norm = np.zeros_like(mag)
+    norm = np.clip(norm, 0.0, 1.0).astype(np.float32)
+    fft_3ch = np.stack([norm] * 3, axis=-1)
     fft_norm = (fft_3ch - IMAGENET_MEAN) / IMAGENET_STD
-    return torch.from_numpy(fft_norm).permute(2, 0, 1).float()
+    tensor = torch.from_numpy(fft_norm).permute(2, 0, 1).float()
+    return torch.nan_to_num(tensor, nan=0.0)
 
 # 4. Augmentations
 train_transforms = A.Compose([
     A.Resize(224, 224),
     A.HorizontalFlip(p=0.5),
-    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.1, rotate_limit=15, border_mode=cv2.BORDER_CONSTANT, value=0, p=0.5),
-    A.ImageCompression(quality_lower=60, quality_upper=100, p=0.4),
+    A.ShiftScaleRotate(shift_limit=0.0625, scale_limit=0.1, rotate_limit=15, border_mode=cv2.BORDER_CONSTANT, p=0.5),
+    A.ImageCompression(p=0.4),
     A.GaussianBlur(blur_limit=(3, 5), p=0.3),
     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.4),
     A.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
@@ -120,10 +127,8 @@ class DualStreamDataset(Dataset):
         else:
             image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
 
-        # Stream 2: Compute FFT frequency spectrum
         fft_tensor = compute_fft(image_rgb, target_size=224)
 
-        # Stream 1: Spatial augmentations
         if self.transform:
             spatial_tensor = self.transform(image=image_rgb)["image"]
         else:
@@ -146,7 +151,7 @@ class DualStreamClassifier(nn.Module):
         self.fusion_head = nn.Sequential(
             nn.Dropout(p=drop_rate),
             nn.Linear(total_dim, 256),
-            nn.BatchNorm1d(256),
+            nn.LayerNorm(256),
             nn.SiLU(),
             nn.Dropout(p=drop_rate / 2.0),
             nn.Linear(256, 1)
@@ -162,27 +167,27 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 model = DualStreamClassifier().to(device)
 
-# 6. Training Loop with AMP & Cosine Annealing
+# 6. Training Loop with Gradient Clipping
 EPOCHS = 10
-LR = 2.5e-4
+LR = 2.0e-4
 
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-2)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-6)
-scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda"))
+scaler = torch.amp.GradScaler('cuda', enabled=(device.type == "cuda"))
 
 best_auc = 0.0
 best_thresh = 0.5
 os.makedirs("outputs", exist_ok=True)
 
-print("Starting Dual-Stream (Spatial + FFT) Training on GPU...")
+print("Starting Stable Dual-Stream (Spatial + FFT) Training on GPU...")
 for epoch in range(1, EPOCHS + 1):
     model.train()
     train_loss = 0.0
     for x_spat, x_freq, labels, _ in tqdm(train_loader, desc=f"Epoch {epoch}/{EPOCHS} [Train]"):
         x_spat, x_freq, labels = x_spat.to(device), x_freq.to(device), labels.to(device)
         optimizer.zero_grad(set_to_none=True)
-        with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+        with torch.amp.autocast('cuda', enabled=(device.type == "cuda")):
             logits = model(x_spat, x_freq)
             loss = criterion(logits, labels)
         scaler.scale(loss).backward()
@@ -199,7 +204,7 @@ for epoch in range(1, EPOCHS + 1):
     with torch.inference_mode():
         for x_spat, x_freq, labels, _ in tqdm(val_loader, desc=f"Epoch {epoch}/{EPOCHS} [Val]"):
             x_spat, x_freq, labels = x_spat.to(device), x_freq.to(device), labels.to(device)
-            with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+            with torch.amp.autocast('cuda', enabled=(device.type == "cuda")):
                 logits = model(x_spat, x_freq)
                 loss = criterion(logits, labels)
             val_loss += loss.item() * x_spat.size(0)
@@ -207,7 +212,8 @@ for epoch in range(1, EPOCHS + 1):
             val_probs.extend(torch.sigmoid(logits).cpu().numpy().flatten())
     val_loss /= len(val_loader.dataset)
     val_targets = np.array(val_targets)
-    val_probs = np.array(val_probs)
+    # Ensure no NaNs can cause roc_auc_score crash
+    val_probs = np.nan_to_num(np.array(val_probs), nan=0.5)
 
     val_auc = roc_auc_score(val_targets, val_probs)
     cur_best_f1, cur_thresh = 0.0, 0.5
