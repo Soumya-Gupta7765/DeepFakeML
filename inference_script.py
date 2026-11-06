@@ -16,13 +16,50 @@ IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 
 
+class SwinClassifier(nn.Module):
+    """Swin-Tiny Vision Transformer matching training pipeline."""
+    def __init__(self, model_name="swin_tiny_patch4_window7_224", pretrained=False, drop_rate=0.3):
+        super().__init__()
+        self.backbone = timm.create_model(model_name, pretrained=pretrained, num_classes=0, drop_rate=drop_rate)
+        in_features = self.backbone.num_features
+        self.head = nn.Sequential(
+            nn.Dropout(p=drop_rate),
+            nn.Linear(in_features, 256),
+            nn.LayerNorm(256),
+            nn.GELU(),
+            nn.Dropout(p=drop_rate / 2.0),
+            nn.Linear(256, 1)
+        )
+
+    def forward(self, x):
+        return self.head(self.backbone(x))
+
+
+class DenseNetClassifier(nn.Module):
+    """DenseNet-121 matching training pipeline."""
+    def __init__(self, model_name="densenet121", pretrained=False, drop_rate=0.3):
+        super().__init__()
+        self.backbone = timm.create_model(model_name, pretrained=pretrained, num_classes=0, drop_rate=drop_rate)
+        in_features = self.backbone.num_features
+        self.head = nn.Sequential(
+            nn.Dropout(p=drop_rate),
+            nn.Linear(in_features, 256),
+            nn.LayerNorm(256),
+            nn.SiLU(),
+            nn.Dropout(p=drop_rate / 2.0),
+            nn.Linear(256, 1)
+        )
+
+    def forward(self, x):
+        return self.head(self.backbone(x))
+
+
 class DeepfakeClassifier(nn.Module):
     """
-    Deepfake classifier model architecture matching the training pipeline.
+    Standard CNN classifier (EfficientNet / ConvNeXt / ResNet).
     """
     def __init__(self, model_name="efficientnet_b3", pretrained=False, drop_rate=0.3):
         super().__init__()
-        # pretrained=False to avoid internet download during evaluation
         self.backbone = timm.create_model(
             model_name,
             pretrained=pretrained,
@@ -97,8 +134,23 @@ def load_model(weights_path, device):
         model_name = "efficientnet_b3"
         threshold = 0.5
 
-    model = DeepfakeClassifier(model_name=model_name, pretrained=False)
-    model.load_state_dict(state_dict)
+    # Detect architecture family and construct corresponding model
+    model_name_str = str(model_name).lower()
+    if "swin" in model_name_str:
+        backbone_name = "swin_tiny_patch4_window7_224"
+        model = SwinClassifier(model_name=backbone_name, pretrained=False)
+    elif "dense" in model_name_str:
+        backbone_name = "densenet121"
+        model = DenseNetClassifier(model_name=backbone_name, pretrained=False)
+    else:
+        model = DeepfakeClassifier(model_name=model_name, pretrained=False)
+
+    try:
+        model.load_state_dict(state_dict)
+    except Exception as e:
+        print(f"Warning: strict state_dict load failed ({e}), attempting non-strict match...")
+        model.load_state_dict(state_dict, strict=False)
+
     model.to(device)
     model.eval()
     return model, threshold

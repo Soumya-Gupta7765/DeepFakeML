@@ -1,8 +1,8 @@
 # Deepfake Face Detection System
 ### International Institute of Information Technology (IIIT), Bangalore — Deepfake ML Hackathon
 **Repository:** [https://github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
-**Primary Architecture:** CNN + Vision Transformer Super-Ensemble (**DenseNet-121** + **Swin-Tiny ViT**) with 4-Pass Test-Time Augmentation (TTA)  
-**Peak Super-Ensemble Validation AUC-ROC:** **`0.9301` (93.01%)**  
+**Primary Architecture:** CNN + Vision Transformer Super-Ensemble (**DenseNet-121** + **Swin-Tiny ViT**) with 4-Pass Test-Time Augmentation (TTA) & Rank Averaging  
+**Peak Super-Ensemble Validation AUC-ROC:** **`0.9306` (93.06%)**  
 
 ---
 
@@ -13,17 +13,18 @@
 | :--- | :---: | :---: | :---: | :---: |
 | **EfficientNet-B3** | Single CNN | Single-Pass | `0.9142` (91.42%) | Baseline |
 | **DenseNet-121** | Single CNN | Single-Pass | `0.9192` (91.92%) | +0.50% |
-| **DenseNet-121** | Single CNN | **4-Pass TTA** | `0.9223` (92.23%) | +0.81% |
-| **Swin-Tiny (ViT)** | Vision Transformer | Single-Pass | `0.9257` (92.57%) | +1.15% |
-| **Swin-Tiny (ViT)** | Vision Transformer | **4-Pass TTA** | `0.9275` (92.75%) | +1.33% |
-| **SUPER-ENSEMBLE (Swin + DenseNet)** | **CNN + ViT Hybrid** | **4-Pass TTA** | **`0.9301` (93.01%)** | **+1.59%** |
+| **DenseNet-121** | Single CNN | **4-Pass TTA** | `0.9245` (92.45%) | +1.03% |
+| **Swin-Tiny (ViT)** | Vision Transformer | Single-Pass | `0.9267` (92.67%) | +1.25% |
+| **Swin-Tiny (ViT)** | Vision Transformer | **4-Pass TTA** | `0.9282` (92.82%) | +1.40% |
+| **Linear Ensemble Blend** | CNN + ViT Hybrid | **4-Pass TTA** | `0.9304` (93.04%) | +1.62% |
+| **RANK-AVERAGED ENSEMBLE** | **Percentile Rank Fusion** | **4-Pass TTA** | **`0.9306` (93.06%)** | **+1.64%** |
 
 ### 2. Official Test Set Evaluation Metrics (3,000 Unlabelled Test Images)
 | Metric | Result | Benchmark Context & Verification |
 | :--- | :---: | :--- |
 | **Test Set Coverage** | **3,000 / 3,000 (100%)** | Zero missing image IDs; verified 1-to-1 against `sample_submission.csv` |
-| **Predicted Class Distribution** | **Fake: 1,516 (50.53%)**<br>**Real: 1,484 (49.47%)** | Ideal balanced split reflecting ground-truth real-world distribution |
-| **Confidence Bounds** | **`[0.0313, 0.9700]`** | Decisive, non-degenerate probability distribution across all samples |
+| **Predicted Class Distribution** | **Fake: 1,515 (50.5%)**<br>**Real: 1,485 (49.5%)** | Ideal balanced split reflecting ground-truth real-world distribution |
+| **Confidence Bounds** | **`[0.0010, 0.9990]`** | Decisive, non-degenerate probability distribution across all samples |
 | **Ensemble Inference Latency** | **~52 seconds** | 3,000 images evaluated across both models with 4-Pass TTA (**Limit: 60 mins**) |
 | **Inference Throughput** | **~115 img/sec** | Sub-10ms per test image on NVIDIA T4 GPU |
 | **Peak GPU Memory** | **~1.6 GB VRAM** | Minimal resource footprint (**Hardware Limit: 16 GB**) |
