@@ -58,3 +58,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     blend_predictions(args.files, args.weights, args.output)
+

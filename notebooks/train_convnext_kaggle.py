@@ -211,3 +211,4 @@ for epoch in range(1, EPOCHS + 1):
         print(f"  --> [*] Saved new best model to outputs/convnext_weights.pt (AUC: {best_auc:.4f})")
 
 print(f"\nConvNeXt-Tiny Training Complete! Best Validation AUC: {best_auc:.4f}")
+
