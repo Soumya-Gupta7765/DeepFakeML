@@ -145,7 +145,7 @@ LR = 3e-4
 criterion = nn.BCEWithLogitsLoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-2)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-6)
-scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda"))
+scaler = torch.amp.GradScaler('cuda', enabled=(device.type == "cuda"))
 
 best_auc = 0.0
 best_thresh = 0.5
@@ -159,7 +159,7 @@ for epoch in range(1, EPOCHS + 1):
     for images, labels, _ in tqdm(train_loader, desc=f"Epoch {epoch}/{EPOCHS} [Train]"):
         images, labels = images.to(device), labels.to(device)
         optimizer.zero_grad(set_to_none=True)
-        with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+        with torch.amp.autocast('cuda', enabled=(device.type == "cuda")):
             logits = model(images)
             loss = criterion(logits, labels)
         scaler.scale(loss).backward()
@@ -176,7 +176,7 @@ for epoch in range(1, EPOCHS + 1):
     with torch.inference_mode():
         for images, labels, _ in tqdm(val_loader, desc=f"Epoch {epoch}/{EPOCHS} [Val]"):
             images, labels = images.to(device), labels.to(device)
-            with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+            with torch.amp.autocast('cuda', enabled=(device.type == "cuda")):
                 logits = model(images)
                 loss = criterion(logits, labels)
             val_loss += loss.item() * images.size(0)
@@ -184,7 +184,7 @@ for epoch in range(1, EPOCHS + 1):
             val_probs.extend(torch.sigmoid(logits).cpu().numpy().flatten())
     val_loss /= len(val_loader.dataset)
     val_targets = np.array(val_targets)
-    val_probs = np.array(val_probs)
+    val_probs = np.nan_to_num(np.array(val_probs), nan=0.5)
 
     val_auc = roc_auc_score(val_targets, val_probs)
     cur_best_f1, cur_thresh = 0.0, 0.5
