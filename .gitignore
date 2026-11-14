@@ -15,14 +15,12 @@ hackathon_dataset/
 *.tar.gz
 
 # Model Weights & large artifacts (store in Drive/releases)
-outputs/*.pt
-outputs/*.pth
-outputs/*.h5
-outputs/*.bin
+*.pt
+*.pth
+*.h5
+*.bin
 outputs/*.onnx*
 outputs/*.data
-submission_package/outputs/*.pt
-submission_package/outputs/*.pth
 submission_package/outputs/*.onnx*
 submission_package/outputs/*.data
 test_preds_check.csv

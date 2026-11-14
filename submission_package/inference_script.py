@@ -135,6 +135,20 @@ def load_model(weights_path, device):
     """
     Loads model checkpoint and restores weights.
     """
+    if not os.path.exists(weights_path):
+        for candidate in [
+            "outputs/model_weights_final.pt",
+            "model_weights_final.pt",
+            "outputs/model_weights.pt",
+            "model_weights.pt",
+            "outputs/swin_weights.pt",
+            "swin_weights.pt"
+        ]:
+            if os.path.exists(candidate):
+                print(f"Notice: '{weights_path}' not found on disk, auto-resolving to '{candidate}'")
+                weights_path = candidate
+                break
+
     print(f"Loading weights from {weights_path}...")
     try:
         checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
@@ -270,8 +284,8 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
 def main():
     parser = argparse.ArgumentParser(description="Deepfake ML Hackathon — Test Set Inference Script")
     parser.add_argument("--test_dir", required=True, help="Path to test images folder")
-    parser.add_argument("--weights", required=True, help="Path to model weight file (.pt)")
-    parser.add_argument("--output", default="predictions.csv", help="Output CSV path (default: predictions.csv)")
+    parser.add_argument("--weights", default="outputs/model_weights_final.pt", help="Path to model weight file (.pt) (default: outputs/model_weights_final.pt)")
+    parser.add_argument("--output", default="predictions_final.csv", help="Output CSV path (default: predictions_final.csv)")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size for inference (default: 64)")
     parser.add_argument("--no_tta", action="store_true", help="Disable Test-Time Augmentation (TTA)")
     args = parser.parse_args()
