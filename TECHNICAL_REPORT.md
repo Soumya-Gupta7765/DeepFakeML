@@ -151,9 +151,11 @@ Inference on the 3,000 unlabelled competition test images produced the following
 ---
 
 ## 7. Explainability & Interpretability (Grad-CAM)
-We implemented Gradient-weighted Class Activation Mapping targeting the final convolutional layers. Attention heatmaps confirm:
+We implemented Gradient-weighted Class Activation Mapping (Grad-CAM) targeting the final convolutional layers of the feature extractor (`features.norm5`). Attention heatmaps confirm:
 - **Genuine Faces:** Activation maps distribute evenly across natural facial contours (cheeks, bridge of the nose, forehead).
 - **Deepfake Faces:** Activations concentrate heavily on periocular margins (pupil geometry, eyelid seams) and mouth blending boundaries—validating that the network learns genuine generative anomalies rather than background shortcuts.
+
+![Grad-CAM Visualizations](outputs/gradcam_visualizations.png)
 
 ---
 

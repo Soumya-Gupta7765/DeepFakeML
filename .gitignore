@@ -19,6 +19,10 @@ outputs/*.pt
 outputs/*.pth
 outputs/*.h5
 outputs/*.bin
+outputs/*.onnx*
+outputs/*.data
+test_preds_check.csv
+predictions_rank_averaging.csv
 
 # Preserve directory structure
 !outputs/.gitkeep
