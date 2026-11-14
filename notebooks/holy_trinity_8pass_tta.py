@@ -1,14 +1,13 @@
 # ==============================================================================
-# DEEPFAKE ML HACKATHON — THE "HOLY TRINITY" 3-MODEL ENSEMBLE + 8-PASS TTA
+# DEEPFAKE ML HACKATHON — SUPER-ENSEMBLE (DENSENET + SWIN) + 8-PASS TTA
 # ==============================================================================
-# Architecture Diversity (Maximum Orthogonality):
-#   1. DenseNet-121   (Classic CNN: Micro-texture boundary seams & high-pass detail)
-#   2. ConvNeXt-Tiny   (Modern Depthwise CNN: 7x7 inverted bottleneck structural patterns)
-#   3. Swin-Tiny ViT   (Vision Transformer: Shifted-window global landmark attention)
+# The Proven Champions:
+#   1. DenseNet-121   (Micro-texture & blending seam specialist)
+#   2. Swin-Tiny ViT   (Shifted-window global landmark attention)
 #
 # Inference Engine:
 #   - 8-Pass Multi-Scale TTA (Original, Flip, Brightness, Contrast, Center-Zoom, & combinations)
-#   - 3-Way Percentile Rank Averaging (ROC Curve Optimal Fusion)
+#   - 2-Way Percentile Rank Averaging (ROC Curve Optimal Fusion)
 # ==============================================================================
 
 import subprocess, sys
@@ -115,7 +114,7 @@ train_loader = DataLoader(DeepfakeDataset(train_df, train_transforms), batch_siz
 val_loader = DataLoader(DeepfakeDataset(val_df, valid_transforms), batch_size=32, shuffle=False, num_workers=2, pin_memory=True)
 
 # ------------------------------------------------------------------------------
-# 4. ARCHITECTURES: THE "HOLY TRINITY"
+# 4. ARCHITECTURES
 # ------------------------------------------------------------------------------
 class DenseNetClassifier(nn.Module):
     """DenseNet-121: Micro-texture boundary specialist."""
@@ -127,22 +126,6 @@ class DenseNetClassifier(nn.Module):
             nn.Linear(self.backbone.num_features, 256),
             nn.LayerNorm(256),
             nn.SiLU(),
-            nn.Dropout(p=drop_rate / 2.0),
-            nn.Linear(256, 1)
-        )
-    def forward(self, x): return self.head(self.backbone(x))
-
-
-class ConvNeXtClassifier(nn.Module):
-    """ConvNeXt-Tiny: Modern 7x7 depthwise-separable inverted bottleneck CNN."""
-    def __init__(self, model_name="convnext_tiny", pretrained=True, drop_rate=0.3):
-        super().__init__()
-        self.backbone = timm.create_model(model_name, pretrained=pretrained, num_classes=0, drop_rate=drop_rate)
-        self.head = nn.Sequential(
-            nn.Dropout(p=drop_rate),
-            nn.Linear(self.backbone.num_features, 256),
-            nn.LayerNorm(256),
-            nn.GELU(),
             nn.Dropout(p=drop_rate / 2.0),
             nn.Linear(256, 1)
         )
@@ -221,17 +204,11 @@ def train_model(model, name, weights_path, epochs=10, lr=2e-4):
 
 
 # ------------------------------------------------------------------------------
-# 6. TRAIN THE THREE COMPLEMENTARY MODELS
+# 6. TRAIN THE TWO PROVEN MODELS
 # ------------------------------------------------------------------------------
-# Model 1: DenseNet-121
 m_dense = DenseNetClassifier().to(device)
 dense_auc = train_model(m_dense, "densenet121", "outputs/densenet_weights.pt", epochs=10, lr=3e-4)
 
-# Model 2: ConvNeXt-Tiny
-m_convnext = ConvNeXtClassifier().to(device)
-conv_auc = train_model(m_convnext, "convnext_tiny", "outputs/convnext_weights.pt", epochs=10, lr=2e-4)
-
-# Model 3: Swin-Tiny ViT
 m_swin = SwinClassifier().to(device)
 swin_auc = train_model(m_swin, "swin_tiny", "outputs/swin_weights.pt", epochs=10, lr=1.5e-4)
 
@@ -243,12 +220,8 @@ print("\n" + "=" * 65)
 print("  EVALUATING 8-PASS MULTI-SCALE TTA ON VALIDATION SET")
 print("=" * 65)
 
-# Load best checkpoints
 m_dense.load_state_dict(torch.load("outputs/densenet_weights.pt", map_location=device, weights_only=False)["model_state_dict"])
 m_dense.eval()
-
-m_convnext.load_state_dict(torch.load("outputs/convnext_weights.pt", map_location=device, weights_only=False)["model_state_dict"])
-m_convnext.eval()
 
 m_swin.load_state_dict(torch.load("outputs/swin_weights.pt", map_location=device, weights_only=False)["model_state_dict"])
 m_swin.eval()
@@ -280,41 +253,39 @@ def predict_8pass_tta(model, images):
         
     return (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8) / 8.0
 
-p_dense_val, p_conv_val, p_swin_val, y_true = [], [], [], []
+p_dense_val, p_swin_val, y_true = [], [], []
 with torch.inference_mode():
     for images, labels, _ in tqdm(val_loader, desc="Running 8-Pass TTA on Validation"):
         images = images.to(device)
         p_dense_val.extend(predict_8pass_tta(m_dense, images).cpu().numpy().tolist())
-        p_conv_val.extend(predict_8pass_tta(m_convnext, images).cpu().numpy().tolist())
         p_swin_val.extend(predict_8pass_tta(m_swin, images).cpu().numpy().tolist())
         y_true.extend(labels.numpy().flatten())
 
 p_dense_val = np.array(p_dense_val)
-p_conv_val = np.array(p_conv_val)
 p_swin_val = np.array(p_swin_val)
 y_true = np.array(y_true)
 
 auc_dense_8tta = roc_auc_score(y_true, p_dense_val)
-auc_conv_8tta = roc_auc_score(y_true, p_conv_val)
 auc_swin_8tta = roc_auc_score(y_true, p_swin_val)
 
 # Linear Blend
-p_linear_3way = (0.25 * p_dense_val) + (0.35 * p_conv_val) + (0.40 * p_swin_val)
-auc_linear_3way = roc_auc_score(y_true, p_linear_3way)
+p_linear_2way = (0.50 * p_dense_val) + (0.50 * p_swin_val)
+auc_linear_2way = roc_auc_score(y_true, p_linear_2way)
 
-# 3-Way Rank Averaging
+# Rank Averaging
 r_dense = rankdata(p_dense_val) / len(p_dense_val)
-r_conv = rankdata(p_conv_val) / len(p_conv_val)
 r_swin = rankdata(p_swin_val) / len(p_swin_val)
-p_rank_3way = (0.25 * r_dense) + (0.35 * r_conv) + (0.40 * r_swin)
-auc_rank_3way = roc_auc_score(y_true, p_rank_3way)
+p_rank_2way = (0.50 * r_dense) + (0.50 * r_swin)
+auc_rank_2way = roc_auc_score(y_true, p_rank_2way)
+
+best_ensemble_auc = max(auc_rank_2way, auc_linear_2way)
+use_rank = (auc_rank_2way >= auc_linear_2way)
 
 print("\n" + "*" * 65)
 print(f"[*] DenseNet-121   (8-Pass TTA) AUC  : {auc_dense_8tta:.4f}")
-print(f"[*] ConvNeXt-Tiny  (8-Pass TTA) AUC  : {auc_conv_8tta:.4f}")
 print(f"[*] Swin-Tiny ViT  (8-Pass TTA) AUC  : {auc_swin_8tta:.4f}")
-print(f"[*] 3-Way Linear Blend AUC           : {auc_linear_3way:.4f}")
-print(f"[*] >>> 3-WAY RANK-AVERAGED AUC      : {auc_rank_3way:.4f} <<<")
+print(f"[*] 2-Way Linear Blend AUC           : {auc_linear_2way:.4f}")
+print(f"[*] >>> 2-WAY RANK-AVERAGED AUC      : {auc_rank_2way:.4f} <<<")
 print("*" * 65)
 
 
@@ -342,25 +313,24 @@ class TestDataset(Dataset):
 
 test_loader = DataLoader(TestDataset(test_files), batch_size=64, shuffle=False, num_workers=2, pin_memory=True)
 
-test_dense, test_conv, test_swin, test_ids = [], [], [], []
+test_dense, test_swin, test_ids = [], [], []
 with torch.inference_mode():
     for images, ids in tqdm(test_loader, desc="Predicting on Test Set"):
         images = images.to(device)
         test_dense.extend(predict_8pass_tta(m_dense, images).cpu().numpy().tolist())
-        test_conv.extend(predict_8pass_tta(m_convnext, images).cpu().numpy().tolist())
         test_swin.extend(predict_8pass_tta(m_swin, images).cpu().numpy().tolist())
         test_ids.extend(ids)
 
 test_dense = np.array(test_dense)
-test_conv = np.array(test_conv)
 test_swin = np.array(test_swin)
 
-# 3-Way Rank Averaging on Test Set
-r_dense_t = rankdata(test_dense) / len(test_dense)
-r_conv_t = rankdata(test_conv) / len(test_conv)
-r_swin_t = rankdata(test_swin) / len(test_swin)
+if use_rank:
+    r_dense_t = rankdata(test_dense) / len(test_dense)
+    r_swin_t = rankdata(test_swin) / len(test_swin)
+    final_conf = 0.50 * r_swin_t + 0.50 * r_dense_t
+else:
+    final_conf = 0.50 * test_swin + 0.50 * test_dense
 
-final_conf = (0.25 * r_dense_t) + (0.35 * r_conv_t) + (0.40 * r_swin_t)
 final_conf = np.clip(final_conf, 0.001, 0.999)
 final_labels = (final_conf >= 0.50).astype(int)
 
@@ -375,17 +345,12 @@ print(f"\n[+] 'predictions.csv' generated ({len(predictions_df)} rows)!")
 print(f"[+] Class Breakdown:\n{predictions_df['label'].value_counts().to_dict()}")
 
 # Save best standalone model as model_weights.pt
-best_source = "outputs/swin_weights.pt"
-if auc_conv_8tta > auc_swin_8tta and auc_conv_8tta > auc_dense_8tta:
-    best_source = "outputs/convnext_weights.pt"
-elif auc_dense_8tta > auc_swin_8tta:
-    best_source = "outputs/densenet_weights.pt"
-
+best_source = "outputs/swin_weights.pt" if auc_swin_8tta >= auc_dense_8tta else "outputs/densenet_weights.pt"
 shutil.copyfile(best_source, "outputs/model_weights.pt")
 print(f"[+] Final submission weight saved to outputs/model_weights.pt (from {best_source})")
 
 print("\n" + "=" * 65)
-print("  HOLY TRINITY 3-MODEL PIPELINE COMPLETE!")
-print(f"  Final Benchmark AUC: {auc_rank_3way:.4f}")
+print("  CLEAN ENSEMBLE PIPELINE COMPLETE!")
+print(f"  Final Benchmark AUC: {best_ensemble_auc:.4f}")
 print("  Generated: 'predictions.csv' and 'outputs/model_weights.pt'")
 print("=" * 65)
