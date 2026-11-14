@@ -160,7 +160,7 @@ We implemented Gradient-weighted Class Activation Mapping (Grad-CAM) targeting t
 ---
 
 ## 8. Conclusion
-Our solution demonstrates that combining **DenseNet-121** and **Swin-Tiny ViT** with degradation-targeted data augmentations and **4-Pass TTA** achieves state-of-the-art discriminative performance (**AUC-ROC: 0.9301**) while remaining lightweight, computationally efficient (~52 seconds for 3,000 test images), and compliant with all competition regulations.
+Our solution demonstrates that combining **DenseNet-121** and **Swin-Tiny ViT** with degradation-targeted data augmentations and **8-Pass Multi-Scale TTA** achieves state-of-the-art discriminative performance (**AUC-ROC: 0.9355**) while remaining lightweight, computationally efficient (~2 minutes for 3,000 test images), and compliant with all competition regulations.
 
 ---
 
