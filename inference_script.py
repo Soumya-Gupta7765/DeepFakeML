@@ -54,6 +54,25 @@ class DenseNetClassifier(nn.Module):
         return self.head(self.backbone(x))
 
 
+class ConvNeXtClassifier(nn.Module):
+    """ConvNeXt-Tiny matching training pipeline."""
+    def __init__(self, model_name="convnext_tiny", pretrained=False, drop_rate=0.3):
+        super().__init__()
+        self.backbone = timm.create_model(model_name, pretrained=pretrained, num_classes=0, drop_rate=drop_rate)
+        in_features = self.backbone.num_features
+        self.head = nn.Sequential(
+            nn.Dropout(p=drop_rate),
+            nn.Linear(in_features, 256),
+            nn.LayerNorm(256),
+            nn.GELU(),
+            nn.Dropout(p=drop_rate / 2.0),
+            nn.Linear(256, 1)
+        )
+
+    def forward(self, x):
+        return self.head(self.backbone(x))
+
+
 class DeepfakeClassifier(nn.Module):
     """
     Standard CNN classifier (EfficientNet / ConvNeXt / ResNet).
@@ -142,6 +161,9 @@ def load_model(weights_path, device):
     elif "dense" in model_name_str:
         backbone_name = "densenet121"
         model = DenseNetClassifier(model_name=backbone_name, pretrained=False)
+    elif "convnext" in model_name_str:
+        backbone_name = "convnext_tiny"
+        model = ConvNeXtClassifier(model_name=backbone_name, pretrained=False)
     else:
         model = DeepfakeClassifier(model_name=model_name, pretrained=False)
 
@@ -206,11 +228,13 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
             probs_orig = torch.sigmoid(logits_orig).squeeze(-1)
 
             if use_tta:
-                # Pass 2: Horizontally Flipped Image
-                images_flipped = torch.flip(images, dims=[-1])
-                logits_flip = model(images_flipped)
-                probs_flip = torch.sigmoid(logits_flip).squeeze(-1)
-                probs = (probs_orig + probs_flip) / 2.0
+                # 4-Pass Multi-Angle TTA
+                img_flip = torch.flip(images, dims=[-1])
+                p1 = probs_orig
+                p2 = torch.sigmoid(model(img_flip)).squeeze(-1)
+                p3 = torch.sigmoid(model(images * 1.05)).squeeze(-1)
+                p4 = torch.sigmoid(model(img_flip * 1.05)).squeeze(-1)
+                probs = (p1 + p2 + p3 + p4) / 4.0
             else:
                 probs = probs_orig
 
