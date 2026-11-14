@@ -21,6 +21,10 @@ outputs/*.h5
 outputs/*.bin
 outputs/*.onnx*
 outputs/*.data
+submission_package/outputs/*.pt
+submission_package/outputs/*.pth
+submission_package/outputs/*.onnx*
+submission_package/outputs/*.data
 test_preds_check.csv
 predictions_rank_averaging.csv
 

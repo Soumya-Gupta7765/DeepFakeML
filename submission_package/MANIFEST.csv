@@ -1,0 +1,12 @@
+File,Size (MB),SHA256 (Prefix),Status
+predictions.csv,0.13 MB,f4d8f3c19fe0,READY
+inference_script.py,0.01 MB,3c6bd87f05fa,READY
+requirements.txt,0.00 MB,794e9e2894e0,READY
+TECHNICAL_REPORT.md,0.01 MB,0b6566368576,READY
+README.md,0.01 MB,125dbf205b72,READY
+outputs/model_weights.pt,105.80 MB,ddbfa5d3ebe1,READY
+outputs/densenet_weights.pt,28.14 MB,1f0abbed3148,READY
+outputs/gradcam_visualizations.png,0.52 MB,0f5e4e940c42,READY
+outputs/model_weights.onnx,1.61 MB,244da055f9b8,READY
+outputs/model_weights.onnx.data,107.75 MB,4ddb600ae570,READY
+outputs/model_weights_traced.pt,107.22 MB,17988b40152d,READY
