@@ -272,23 +272,41 @@ class TestDataset(Dataset):
 
 test_loader = DataLoader(TestDataset(test_files), batch_size=64, shuffle=False, num_workers=2, pin_memory=True)
 
-def predict_4pass_tta(model, images):
+def predict_8pass_tta(model, images):
     with torch.amp.autocast('cuda', enabled=(device.type == "cuda")):
+        # 1. Original
         p1 = torch.sigmoid(model(images)).squeeze(-1)
-        p2 = torch.sigmoid(model(torch.flip(images, dims=[-1]))).squeeze(-1)
+        # 2. Horizontal Flip
+        img_f = torch.flip(images, dims=[-1])
+        p2 = torch.sigmoid(model(img_f)).squeeze(-1)
+        # 3. Brightness (+5%)
         p3 = torch.sigmoid(model(images * 1.05)).squeeze(-1)
-        p4 = torch.sigmoid(model(torch.flip(images, dims=[-1]) * 1.05)).squeeze(-1)
-    return (p1 + p2 + p3 + p4) / 4.0
+        # 4. Flip + Brightness
+        p4 = torch.sigmoid(model(img_f * 1.05)).squeeze(-1)
+        # 5. Contrast Boost (+8%)
+        p5 = torch.sigmoid(model((images - 0.5) * 1.08 + 0.5)).squeeze(-1)
+        # 6. Flip + Contrast
+        p6 = torch.sigmoid(model((img_f - 0.5) * 1.08 + 0.5)).squeeze(-1)
+        # 7. Center Zoom (1.06x)
+        h, w = images.shape[-2:]
+        scaled = torch.nn.functional.interpolate(images, scale_factor=1.06, mode='bilinear', align_corners=False)
+        sh, sw = scaled.shape[-2:]
+        dh, dw = (sh - h) // 2, (sw - w) // 2
+        img_zoom = scaled[:, :, dh:dh+h, dw:dw+w]
+        p7 = torch.sigmoid(model(img_zoom)).squeeze(-1)
+        # 8. Flip + Zoom
+        p8 = torch.sigmoid(model(torch.flip(img_zoom, dims=[-1]))).squeeze(-1)
+    return (p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8) / 8.0
 
 swin_model.eval()
 densenet_model.eval()
 
 test_swin_probs, test_dense_probs, test_ids = [], [], []
 with torch.inference_mode():
-    for images, ids in tqdm(test_loader, desc="Predicting on Test Set"):
+    for images, ids in tqdm(test_loader, desc="Predicting on Test Set (8-Pass TTA)"):
         images = images.to(device)
-        test_swin_probs.extend(predict_4pass_tta(swin_model, images).cpu().numpy().tolist())
-        test_dense_probs.extend(predict_4pass_tta(densenet_model, images).cpu().numpy().tolist())
+        test_swin_probs.extend(predict_8pass_tta(swin_model, images).cpu().numpy().tolist())
+        test_dense_probs.extend(predict_8pass_tta(densenet_model, images).cpu().numpy().tolist())
         test_ids.extend(ids)
 
 test_swin_probs = np.array(test_swin_probs)
