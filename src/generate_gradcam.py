@@ -91,16 +91,35 @@ def run_visualizations(weights_path, sample_images, output_path="outputs/gradcam
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    # Load model
-    checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
-    state_dict = checkpoint["model_state_dict"] if "model_state_dict" in checkpoint else checkpoint
-    model = DeepfakeClassifier("efficientnet_b3", pretrained=False)
-    model.load_state_dict(state_dict)
-    model.to(device)
+    # Load model dynamically
+    from inference_script import load_model, DenseNetClassifier
+    try:
+        model, _ = load_model(weights_path, device)
+    except Exception:
+        checkpoint = torch.load(weights_path, map_location=device, weights_only=False)
+        state_dict = checkpoint["model_state_dict"] if "model_state_dict" in checkpoint else checkpoint
+        model = DenseNetClassifier(pretrained=False)
+        model.load_state_dict(state_dict)
+        model.to(device)
     model.eval()
 
-    # Target last conv layer in EfficientNet-B3 (conv_head)
-    target_layer = model.backbone.conv_head
+    # Find the target layer (last conv / norm layer)
+    target_layer = None
+    if hasattr(model, "backbone"):
+        if hasattr(model.backbone, "features") and hasattr(model.backbone.features, "norm5"):
+            target_layer = model.backbone.features.norm5
+        elif hasattr(model.backbone, "conv_head"):
+            target_layer = model.backbone.conv_head
+        elif hasattr(model.backbone, "norm"):
+            target_layer = model.backbone.norm
+    
+    if target_layer is None:
+        # Fallback to first major feature block
+        for mod in reversed(list(model.modules())):
+            if isinstance(mod, (nn.Conv2d, nn.LayerNorm, nn.BatchNorm2d)):
+                target_layer = mod
+                break
+
     grad_cam = GradCAM(model, target_layer)
 
     n_samples = len(sample_images)
