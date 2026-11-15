@@ -17,13 +17,11 @@ os.makedirs(SUB_DIR, exist_ok=True)
 os.makedirs(os.path.join(SUB_DIR, "outputs"), exist_ok=True)
 
 files_to_copy = [
-    ("predictions_final.csv", "predictions_final.csv"),
     ("predictions.csv", "predictions.csv"),
     ("inference_script.py", "inference_script.py"),
     ("requirements.txt", "requirements.txt"),
     ("TECHNICAL_REPORT.md", "TECHNICAL_REPORT.md"),
     ("README.md", "README.md"),
-    ("outputs/model_weights_final.pt", "outputs/model_weights_final.pt"),
     ("outputs/model_weights.pt", "outputs/model_weights.pt"),
     ("outputs/gradcam_visualizations.png", "outputs/gradcam_visualizations.png"),
 ]
