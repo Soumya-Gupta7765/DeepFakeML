@@ -340,9 +340,24 @@ print(f"[+] Class Breakdown:\n{predictions_df['label'].value_counts().to_dict()}
 pd.DataFrame({"image_id": test_ids, "label": (test_swin_probs >= 0.5).astype(int), "confidence": np.round(test_swin_probs, 4)}).to_csv("outputs/predictions_swin.csv", index=False)
 pd.DataFrame({"image_id": test_ids, "label": (test_dense_probs >= 0.5).astype(int), "confidence": np.round(test_dense_probs, 4)}).to_csv("outputs/predictions_densenet.csv", index=False)
 
-# Copy the best single model weights (Swin-Tiny) to 'outputs/model_weights.pt'
-shutil.copyfile("outputs/swin_full_weights.pt", "outputs/model_weights.pt")
-print("[+] Top single model weights saved to 'outputs/model_weights.pt'")
+# ------------------------------------------------------------------------------
+# 9. BUNDLE WINNING SUPER-ENSEMBLE CHECKPOINT (SWIN-TINY + DENSENET-121)
+# ------------------------------------------------------------------------------
+print("\n" + "=" * 70)
+print("  BUNDLING DUAL-MODEL SUPER-ENSEMBLE WEIGHTS INTO 'outputs/model_weights.pt'")
+print("=" * 70)
+
+swin_ckpt = torch.load("outputs/swin_full_weights.pt", map_location="cpu")
+dense_ckpt = torch.load("outputs/densenet121_full_epoch_10.pt", map_location="cpu")
+
+torch.save({
+    "is_ensemble": True,
+    "model_name": "ensemble_swin_densenet",
+    "swin_state_dict": swin_ckpt["model_state_dict"],
+    "densenet_state_dict": dense_ckpt["model_state_dict"],
+    "best_threshold": 0.50
+}, "outputs/model_weights.pt")
+print("[+] Successfully bundled Swin-Tiny + DenseNet-121 into 'outputs/model_weights.pt'!")
 
 # Plot training curves
 plt.figure(figsize=(10, 4))
