@@ -197,7 +197,7 @@ def train_model(model, name, weights_path, epochs=10, lr=2e-4):
         print(f"Epoch [{epoch:02d}/{epochs:02d}] Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Val AUC: {val_auc:.4f}")
         if val_auc > best_auc:
             best_auc = val_auc
-            torch.save({"model_state_dict": model.state_dict(), "best_auc": best_auc, "model_name": name}, weights_path)
+            torch.save({"model_state_dict": model.state_dict(), "best_auc": best_auc, "model_name": name, "best_threshold": 0.50}, weights_path)
             print(f"  --> [*] Saved new best {name} (AUC: {best_auc:.4f})")
 
     return best_auc
