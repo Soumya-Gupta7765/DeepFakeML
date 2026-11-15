@@ -222,8 +222,8 @@ After validating optimal hyperparameters and architecture balance on Fold 0, the
 - **Expanded Coverage:** +25% more training faces (from 5,600 to 7,000 images) provides direct exposure to rare synthesis artifacts and diverse compression regimes.
 - **Inference Results on 3,000 Test Images (`predictions.csv`):**
   - Evaluated: Exactly 3,000 images (0 missing).
-  - Class Distribution: **1,516 Fake (50.53%)** vs. **1,484 Real (49.47%)**.
-  - Confidence Range: Strictly valid `[0.0313, 0.9700]` with smooth, non-degenerate transitions.
+  - Class Distribution: **1,514 Fake (50.47%)** vs. **1,486 Real (49.53%)**.
+  - Confidence Range: Strictly valid `[0.0064, 0.9963]` with smooth, non-degenerate transitions.
 
 ---
 
