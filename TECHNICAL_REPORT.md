@@ -1,7 +1,7 @@
 # Technical Report: Robust Deepfake Face Detection via Orthogonal Dual-Stream Ensemble (DenseNet-121 + Swin-Tiny ViT)
 **Event:** Deepfake ML Hackathon (Synergy '26)  
 **Host Institution:** International Institute of Information Technology (IIIT), Bangalore  
-**Team Members:** Sowmya Gupta, Dhruv Reddy Sambavaram  
+**Team Members:** Soumya Gupta, Dhruv Reddy Sambavaram  
 **Repository:** [https://github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
 **Date:** November 2026  
 
@@ -266,7 +266,7 @@ All models and scripts were benchmarked under official judge conditions on an NV
 
 ---
 
-## 11. Challenges and Honest Limitations
+## 11. Challenges and Limitations
 
 1. **Vulnerability to Extreme Cropping:** Performance drops to `0.8955` AUC under severe center-crop zoom (> 1.15×), as critical jawline and forehead blending seams are cropped out of view.
 2. **ConvNeXt-Tiny Mixed-Precision Instability:** We identified that ConvNeXt models exhibit numerical gradient underflow under standard PyTorch AMP FP16, collapsing to random guessing unless float32 or specialized gradient scaling is enforced.
@@ -284,7 +284,7 @@ All models and scripts were benchmarked under official judge conditions on an NV
 * **Python:** 3.10+
 * **Core Libraries:** `torch>=2.0.0`, `torchvision>=0.15.0`, `timm>=0.9.12`, `albumentations>=1.3.1`, `scikit-learn>=1.2.0`, `pandas>=1.5.0`, `numpy>=1.23.5` (see `requirements.txt`).
 
-### 12.2 Verification Command (Judge Execution)
+### 12.2 Verification Command 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -311,4 +311,4 @@ python inference_script.py --test_dir ./test/images/ --weights outputs/model_wei
 - **AutoResearch Methodology:** A. Karpathy for foundational insights on automated hypothesis verification.
 - **Deepfake Benchmarking & Augmentations:** DFDC (Deepfake Detection Challenge) winning solutions (Seferbekov, NTechLab).
 - **Network Architectures:** Ross Wightman (`timm` library) for robust, optimized implementations of Swin Transformers and DenseNet.
-- **Collaborative Engineering:** Synergy '26 Hackathon Organizers and IIIT Bangalore faculty for designing a rigorous, generalization-focused benchmark.
+
