@@ -322,7 +322,7 @@ print("=" * 70)
 # Mathematical Rank Averaging (ROC Curve Optimal)
 r_swin = rankdata(test_swin_probs) / len(test_swin_probs)
 r_dense = rankdata(test_dense_probs) / len(test_dense_probs)
-final_conf = 0.55 * r_swin + 0.45 * r_dense
+final_conf = 0.50 * r_swin + 0.50 * r_dense
 final_conf = np.clip(final_conf, 0.001, 0.999)
 final_labels = (final_conf >= 0.50).astype(int)
 
