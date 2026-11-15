@@ -1,6 +1,6 @@
 # Deepfake Face Detection System — Technical Summary Report
 ### International Institute of Information Technology (IIIT), Bangalore — Deepfake ML Hackathon
-**Team Members:** Soumya Gupta, Dhruv Reddy Sambavaram | **Repository:** [github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
+**Team Members:** Soumya Gupta, Dhruv Reddy Sambavaram | **Repository:** [github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML) | **Video Walkthrough:** [loom.com/share/fa1e58110d82444abd2e4be56da4f1e4](https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4)  
 **Primary Architecture:** Dual-Model Super-Ensemble (**DenseNet-121 CNN** + **Swin-Tiny ViT**) with **8-Pass Multi-Scale TTA** & **Rank Averaging**  
 **Benchmark Validation AUC-ROC:** **`0.9355` (93.55%)** | **Inference Runtime on NVIDIA T4 GPU:** **~70 seconds** (Official Limit: < 5 mins)
 

@@ -3,6 +3,7 @@
 **Host Institution:** International Institute of Information Technology (IIIT), Bangalore  
 **Team Members:** Soumya Gupta, Dhruv Reddy Sambavaram  
 **Repository:** [https://github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
+**Video Demonstration:** [https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4](https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4)  
 **Date:** November 2026  
 
 ---
@@ -308,6 +309,7 @@ python inference_script.py --test_dir ./test/images/ --weights outputs/model_wei
 | **Technical Report** | `TECHNICAL_REPORT.md` | 0.02 MB | Comprehensive methodology, ablation study, and benchmarks. |
 | **Model Weights** | `outputs/model_weights.pt` | 133.92 MB | Dual-Model Super-Ensemble (Swin-Tiny + DenseNet-121) weights. |
 | **Grad-CAM Overlay** | `outputs/gradcam_visualizations.png` | 0.52 MB | High-resolution explainability maps. |
+| **Video Walkthrough** | [loom.com/share/fa1e58110d82444abd2e4be56da4f1e4](https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4) | Hosted URL | 1-minute system architecture and model video walkthrough. |
 
 ---
 

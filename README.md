@@ -1,6 +1,7 @@
 # Deepfake Face Detection System
 ### International Institute of Information Technology (IIIT), Bangalore — Deepfake ML Hackathon
 **Repository:** [https://github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML)  
+**Video Walkthrough:** [https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4](https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4)  
 **Primary Architecture:** CNN + Vision Transformer Super-Ensemble (**DenseNet-121** + **Swin-Tiny ViT**) with 8-Pass Multi-Scale Test-Time Augmentation (TTA) & Rank Averaging  
 **Peak Super-Ensemble Validation AUC-ROC:** **`0.9355` (93.55%)**  
 **Official Production Training Script:** [`notebooks/01_train_full_dataset_final.py`](notebooks/01_train_full_dataset_final.py)  
@@ -188,10 +189,11 @@ All required and bonus deliverables are 100% completed:
 | **3** | Inference Script | `inference_script.py` | **Completed** | CLI interface verified (`--test_dir`, `--weights`, `--output`) |
 | **4** | Dependencies | `requirements.txt` | **Completed** | Clean Python 3.10+ dependencies (`torch`, `timm`, `scipy`, etc.) |
 | **5** | Source Code | GitHub Repository | **Completed** | [github.com/Soumya-Gupta7765/DeepFakeML](https://github.com/Soumya-Gupta7765/DeepFakeML) |
-| **6** | Technical Report | `TECHNICAL_REPORT.md` | **Completed** | 4+ page detailed report (methodology, results, efficiency) |
-| **7** | Training Logs | `outputs/training_curves.png` | **Completed** | Full epoch history and loss curves on 100% data |
-| **8** | Explainability | `src/generate_gradcam.py` | **Completed** | Grad-CAM activation maps on convolutional layers |
-| **9** | Interpretability Heatmap | `outputs/gradcam_visualizations.png` | **Completed** | Visual evidence for model interpretability |
+| **6** | Video Walkthrough | Loom Video | **Completed** | [loom.com/share/fa1e58110d82444abd2e4be56da4f1e4](https://www.loom.com/share/fa1e58110d82444abd2e4be56da4f1e4) |
+| **7** | Technical Report | `TECHNICAL_REPORT.md` / `report.pdf` | **Completed** | 2-page summary + 11-page detailed report |
+| **8** | Training Logs | `outputs/training_curves.png` | **Completed** | Full epoch history and loss curves on 100% data |
+| **9** | Explainability | `src/generate_gradcam.py` | **Completed** | Grad-CAM activation maps on convolutional layers |
+| **10** | Interpretability Heatmap | `outputs/gradcam_visualizations.png` | **Completed** | Visual evidence for model interpretability |
 
 ### Grad-CAM Interpretability Maps
 ![Grad-CAM Visualizations](outputs/gradcam_visualizations.png)
