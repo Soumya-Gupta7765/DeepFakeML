@@ -1,7 +1,7 @@
 File,Size (MB),SHA256 (Prefix),Status
 predictions_final.csv,0.13 MB,f4d8f3c19fe0,READY
 predictions.csv,0.13 MB,f4d8f3c19fe0,READY
-inference_script.py,0.01 MB,5f74232263e7,READY
+inference_script.py,0.01 MB,f841b2426b3c,READY
 requirements.txt,0.00 MB,794e9e2894e0,READY
 TECHNICAL_REPORT.md,0.02 MB,3019b6eda195,READY
 README.md,0.01 MB,125dbf205b72,READY

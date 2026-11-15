@@ -218,14 +218,13 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
 
     # Create dataset & loader
     dataset = TestImageDataset(image_files, image_size=224)
-    if os.name == "nt" or device.type == "cpu":
-        num_workers = 0
+    workers = 4 if (device.type == "cuda" and os.name != "nt") else 0
 
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
+        num_workers=workers,
         pin_memory=(device.type == "cuda")
     )
 
@@ -236,7 +235,8 @@ def run_inference(test_dir, weights_path, output_path, batch_size=64, num_worker
     print("Generating predictions...")
     for images, ids in tqdm(dataloader, desc="Inference"):
         images = images.to(device, non_blocking=True)
-        with torch.cuda.amp.autocast(enabled=use_amp):
+        autocast_ctx = torch.amp.autocast('cuda', enabled=use_amp) if hasattr(torch, "amp") else torch.cuda.amp.autocast(enabled=use_amp)
+        with autocast_ctx:
             # Pass 1: Original Image
             logits_orig = model(images)
             probs_orig = torch.sigmoid(logits_orig).squeeze(-1)
