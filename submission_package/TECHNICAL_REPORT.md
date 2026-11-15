@@ -300,7 +300,7 @@ pip install -r requirements.txt
 python inference_script.py --test_dir ./test/images/ --weights outputs/model_weights.pt --output predictions.csv
 ```
 
-### 12.3 Submission Deliverable Manifest
+### 12.3 Submission Deliverables Table
 | Deliverable | Path | Size | Description |
 | :--- | :--- | :---: | :--- |
 | **Predictions** | `predictions.csv` | 0.13 MB | Exactly 3,000 rows (`image_id,label,confidence`). Canary-verified. |

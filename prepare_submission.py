@@ -11,10 +11,11 @@ def get_sha256(path):
     return h.hexdigest()
 
 SUB_DIR = "submission_package"
-if os.path.exists(SUB_DIR):
-    shutil.rmtree(SUB_DIR)
 os.makedirs(SUB_DIR, exist_ok=True)
 os.makedirs(os.path.join(SUB_DIR, "outputs"), exist_ok=True)
+# Remove old manifest if it exists
+if os.path.exists(os.path.join(SUB_DIR, "MANIFEST.csv")):
+    os.remove(os.path.join(SUB_DIR, "MANIFEST.csv"))
 
 files_to_copy = [
     ("predictions.csv", "predictions.csv"),
@@ -54,8 +55,6 @@ for src, dst in files_to_copy:
     else:
         print(f"[-] WARNING: Missing {src}")
 
-df_manifest = pd.DataFrame(manifest)
-df_manifest.to_csv(os.path.join(SUB_DIR, "MANIFEST.csv"), index=False)
 print("\n" + "=" * 70)
 print(f"Submission Package successfully prepared in '{SUB_DIR}/'!")
 print("=" * 70)

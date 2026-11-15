@@ -164,7 +164,6 @@ deepFakeMlHackathon/
 │   ├── requirements.txt                         # Dependencies
 │   ├── TECHNICAL_REPORT.md                      # 4+ page comprehensive technical report
 │   ├── README.md                                # Package documentation
-│   ├── MANIFEST.csv                             # Integrity checklist with SHA-256 hashes
 │   └── outputs/
 │       ├── model_weights.pt                     # Dual-model weights (133.9 MB)
 │       └── gradcam_visualizations.png           # Interpretability heatmaps
