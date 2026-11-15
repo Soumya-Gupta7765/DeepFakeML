@@ -23,9 +23,15 @@ outputs/*.onnx*
 outputs/*.data
 submission_package/outputs/*.onnx*
 submission_package/outputs/*.data
+
+# Temporary experiment outputs & scratch files
 test_preds_check.csv
 predictions_rank_averaging.csv
+predictions_densenet.csv
+predictions_15.csv
+predictions_2way.csv
+inference_run.csv
+*_demo.pdf
 
 # Preserve directory structure
 !outputs/.gitkeep
-
