@@ -27,7 +27,7 @@
 | **Test Set Coverage** | **3,000 / 3,000 (100%)** | Zero missing image IDs; verified 1-to-1 against `sample_submission.csv` |
 | **Predicted Class Distribution** | **Fake: 1,503 (50.10%)**<br>**Real: 1,497 (49.90%)** | Pristine balanced split reflecting ground-truth real-world distribution |
 | **Confidence Bounds** | **`[0.0010, 0.9990]`** | Decisive, non-degenerate probability distribution across all samples |
-| **Ensemble Inference Latency** | **~1 minute 10 seconds** | 3,000 images evaluated across both models with 8-Pass TTA on NVIDIA T4 GPU (**Official Limit: < 5 mins for 20 pts**) |
+| **Ensemble Inference Latency** | **~1 minute 10 seconds** | 3,000 images evaluated across both models with 8-Pass TTA on NVIDIA T4 GPU (**Official Limit: < 5 mins**) |
 | **Inference Throughput** | **~120 img/sec** | Sub-10ms per test image on NVIDIA T4 GPU |
 | **Peak GPU Memory** | **~1.6 GB VRAM** | Minimal resource footprint (**Hardware Limit: 16 GB**) |
 | **Submitted Checkpoint Size** | **133.9 MB** | Dual-model bundle: Swin-Tiny + DenseNet-121 (**Competition Limit: 5,000 MB**) |
@@ -150,7 +150,7 @@ deepFakeMlHackathon/
 │   ├── eda.py                                   # Exploratory Data Analysis module
 │   ├── dual_stream_model.py                     # Dual-Stream Spatial + FFT architecture
 │   ├── ensemble_blend.py                        # Multi-model weighted probability blender
-│   └── generate_gradcam.py                      # Grad-CAM interpretability module (Bonus +2 pts)
+│   └── generate_gradcam.py                      # Grad-CAM interpretability module
 ├── outputs/
 │   ├── model_weights.pt                         # Bundled Super-Ensemble weights (133.9 MB)
 │   ├── training_curves.png                      # Convergence curves (Loss vs. Epoch)
@@ -191,7 +191,7 @@ All required and bonus deliverables are 100% completed:
 | **6** | Technical Report | `TECHNICAL_REPORT.md` | **Completed** | 4+ page detailed report (methodology, results, efficiency) |
 | **7** | Training Logs | `outputs/training_curves.png` | **Completed** | Full epoch history and loss curves on 100% data |
 | **8** | Explainability | `src/generate_gradcam.py` | **Completed** | Grad-CAM activation maps on convolutional layers |
-| **9** | Interpretability Heatmap | `outputs/gradcam_visualizations.png` | **Completed** | Visual evidence for Bonus Points (+2 pts) |
+| **9** | Interpretability Heatmap | `outputs/gradcam_visualizations.png` | **Completed** | Visual evidence for model interpretability |
 
-### Grad-CAM Interpretability Maps (Bonus: +2 pts)
+### Grad-CAM Interpretability Maps
 ![Grad-CAM Visualizations](outputs/gradcam_visualizations.png)

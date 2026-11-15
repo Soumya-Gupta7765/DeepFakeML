@@ -48,7 +48,7 @@ The primary challenge in deepfake detection is **generalization across unseen ge
 Four core constraints shaped our engineering and architectural decisions:
 1. **Absence of a Public Leaderboard:** Validation is our sole guide against overfitting. A naive random split suffers from near-duplicate image leakage; our validation harness must provide honest, un-gameable feedback.
 2. **Evaluation on Unseen Generators:** The competition rules explicitly highlight that models relying on surface artifacts from a single generation tool will degrade on private test data. We therefore enforce structural architectural diversity.
-3. **Robustness as a Scored Metric (20 Points + Tiebreaker):** Models are evaluated against undisclosed corrupted image variants (compression, blur, noise, cropping). All pre-processing and augmentations were designed to preserve invariant semantic cues.
+3. **Robustness as a Core Evaluation Metric:** Models are evaluated against undisclosed corrupted image variants (compression, blur, noise, cropping). All pre-processing and augmentations were designed to preserve invariant semantic cues.
 4. **Finite Dataset Budget (7,000 Training Samples):** With 7,000 training images, training massive models from scratch guarantees severe overfitting. Leveraging pretrained ImageNet-1k representations with regularized lightweight projection heads delivers optimal sample efficiency.
 
 ---
@@ -235,7 +235,7 @@ After validating optimal hyperparameters and architecture balance on Fold 0, the
 
 ## 9. Explainability & Interpretability (Grad-CAM)
 
-To provide transparency and satisfy the Explainable AI (XAI) criteria (+2 bonus points), we implemented **Gradient-weighted Class Activation Mapping (Grad-CAM)** hooking the final convolutional block of the feature extractor (`features.norm5`).
+To provide transparency and satisfy Explainable AI (XAI) criteria, we implemented **Gradient-weighted Class Activation Mapping (Grad-CAM)** hooking the final convolutional block of the feature extractor (`features.norm5`).
 
 ```
                     Grad-CAM Activation Heatmaps: Genuine vs. Deepfake
@@ -264,7 +264,7 @@ All models and scripts were benchmarked under official judge conditions on an NV
 
 | Metric | Measured Value | Competition Limit / Requirement | Compliance Status |
 | :--- | :---: | :---: | :---: |
-| **Inference Time (3,000 Test Images)** | **2 min 07 s** | < 5 min for full 20 pts (max: 60 min) | **PASS (20/20 Pts)** |
+| **Inference Time (3,000 Test Images)** | **2 min 07 s** | < 5 min (max: 60 min) | **PASS** |
 | **Effective Inference Throughput** | ~120 frames/sec | — | Exceptional |
 | **Peak GPU Memory Footprint** | **1.62 GB** | 16 GB | **PASS (10.1% of budget)** |
 | **Primary Checkpoint Size (`model_weights.pt`)** | **133.9 MB** | 5,000 MB (5 GB) | **PASS (2.7% of budget, Dual-Model Bundle)** |
@@ -306,8 +306,8 @@ python inference_script.py --test_dir ./test/images/ --weights outputs/model_wei
 | **Inference Script** | `inference_script.py` | 0.01 MB | Production CLI inference engine with 4-pass TTA. |
 | **Requirements** | `requirements.txt` | < 1 KB | Pinned minimal dependencies for reproduction. |
 | **Technical Report** | `TECHNICAL_REPORT.md` | 0.02 MB | Comprehensive methodology, ablation study, and benchmarks. |
-| **Model Weights** | `outputs/model_weights.pt` | 105.80 MB | Swin-Tiny Vision Transformer trained weights. |
-| **Grad-CAM Overlay** | `outputs/gradcam_visualizations.png` | 0.52 MB | High-resolution explainability maps (+2 bonus pts). |
+| **Model Weights** | `outputs/model_weights.pt` | 133.92 MB | Dual-Model Super-Ensemble (Swin-Tiny + DenseNet-121) weights. |
+| **Grad-CAM Overlay** | `outputs/gradcam_visualizations.png` | 0.52 MB | High-resolution explainability maps. |
 
 ---
 

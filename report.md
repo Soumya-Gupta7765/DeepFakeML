@@ -84,8 +84,8 @@ After validating hyperparameters, both models were retrained on 100% of labeled 
 * **Class Split:** **1,503 Fake (50.10%)** vs. **1,497 Real (49.90%)** | **Confidence Bounds:** `[0.0010, 0.9990]`.
 * **Inference Reproducibility:** 3,000 / 3,000 exact label match (100.00% reproduction agreement, zero penalty).
 
-### 4.3 Efficiency Measurement on NVIDIA T4 GPU (Full 20/20 Points)
-* **Full Test Set Runtime:** **~70 seconds** (Official Limit: < 5 minutes for full 20 pts).
+### 4.3 Efficiency Measurement on NVIDIA T4 GPU
+* **Full Test Set Runtime:** **~70 seconds** (Official Limit: < 5 minutes).
 * **Throughput:** ~120 images/second | **Peak GPU VRAM:** **~1.6 GB** (10% of 16 GB hardware budget).
 * **Bundled Checkpoint Size (`model_weights.pt`):** **133.9 MB** (Well within 5,000 MB limit).
-* **Explainability Bonus (+2 pts):** Grad-CAM heatmaps verify intense activations on periocular and mouth blending seams on fakes, with zero background shortcut reliance (see `outputs/gradcam_visualizations.png` and full 11-page `TECHNICAL_REPORT.pdf`).
+* **Explainability Analysis:** Grad-CAM heatmaps verify intense activations on periocular and mouth blending seams on fakes, with zero background shortcut reliance (see `outputs/gradcam_visualizations.png` and full 11-page `TECHNICAL_REPORT.pdf`).
