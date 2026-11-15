@@ -21,6 +21,7 @@ files_to_copy = [
     ("inference_script.py", "inference_script.py"),
     ("requirements.txt", "requirements.txt"),
     ("TECHNICAL_REPORT.md", "TECHNICAL_REPORT.md"),
+    ("TECHNICAL_REPORT.pdf", "TECHNICAL_REPORT.pdf"),
     ("README.md", "README.md"),
     ("outputs/model_weights.pt", "outputs/model_weights.pt"),
     ("outputs/gradcam_visualizations.png", "outputs/gradcam_visualizations.png"),
