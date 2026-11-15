@@ -24,6 +24,9 @@ files_to_copy = [
     ("README.md", "README.md"),
     ("outputs/model_weights.pt", "outputs/model_weights.pt"),
     ("outputs/gradcam_visualizations.png", "outputs/gradcam_visualizations.png"),
+    ("outputs/eda_analysis.png", "outputs/eda_analysis.png"),
+    ("outputs/training_curves.png", "outputs/training_curves.png"),
+    ("outputs/model_evaluation_metrics.png", "outputs/model_evaluation_metrics.png"),
 ]
 
 manifest = []
@@ -44,7 +47,7 @@ for src, dst in files_to_copy:
             "SHA256 (Prefix)": sha,
             "Status": "READY"
         })
-        print(f"[+] Packaged: {dst:<35} | {size_mb:>8.2f} MB | SHA: {sha}")
+        print(f"[+] Packaged: {dst:<40} | {size_mb:>8.2f} MB | SHA: {sha}")
     else:
         print(f"[-] WARNING: Missing {src}")
 
@@ -53,4 +56,3 @@ df_manifest.to_csv(os.path.join(SUB_DIR, "MANIFEST.csv"), index=False)
 print("\n" + "=" * 70)
 print(f"Submission Package successfully prepared in '{SUB_DIR}/'!")
 print("=" * 70)
-

@@ -65,6 +65,8 @@ Four core constraints shaped our engineering and architectural decisions:
 | **Laplacian Sharpness** | Real: μ = 782.52 vs. Fake: μ = 1014.95 (p < 0.001) | Synthetic faces have elevated edge gradients along blend seams, providing strong discriminative signal. |
 | **Test Image Resolution** | Exactly 224 × 224 RGB pixels | Preserves 1:1 aspect ratio without geometric distortion during inference. |
 
+![Figure 1: Exploratory Data Analysis & Statistical Profiling](outputs/eda_analysis.png)
+
 ---
 
 ## 3. Validation Design (Leakage-Free Protocol)
@@ -217,13 +219,17 @@ Percentile rank averaging eliminates calibration mismatch and lifted overall AUC
 | **Center-Crop Zoom (1.10×)** | `0.8710` | `0.8840` | **`0.8955`** |
 | **Mean Robustness AUC** | `0.8984` | `0.9045` | **`0.9148`** |
 
+![Figure 2: Empirical Evaluation Metrics — (A) Validation ROC Curves by Architecture, (B) Robustness Stress-Testing across Corruptions, and (C) Official Test Set Probability Distribution](outputs/model_evaluation_metrics.png)
+
 ### 8.2 100% Full-Dataset Retraining (Competition Benchmark Phase)
 After validating optimal hyperparameters and architecture balance on Fold 0, the winning architectures (Swin-Tiny and DenseNet-121) were retrained on **100% of the training dataset (all 7,000 images)**:
 - **Expanded Coverage:** +25% more training faces (from 5,600 to 7,000 images) provides direct exposure to rare synthesis artifacts and diverse compression regimes.
 - **Inference Results on 3,000 Test Images (`predictions.csv`):**
   - Evaluated: Exactly 3,000 images (0 missing).
-  - Class Distribution: **1,514 Fake (50.47%)** vs. **1,486 Real (49.53%)**.
-  - Confidence Range: Strictly valid `[0.0064, 0.9963]` with smooth, non-degenerate transitions.
+  - Class Distribution: **1,503 Fake (50.10%)** vs. **1,497 Real (49.90%)**.
+  - Confidence Range: Strictly valid `[0.0010, 0.9990]` with smooth, non-degenerate transitions.
+
+![Figure 3: Full-Dataset Retraining Convergence Curves](outputs/training_curves.png)
 
 ---
 
@@ -261,7 +267,7 @@ All models and scripts were benchmarked under official judge conditions on an NV
 | **Inference Time (3,000 Test Images)** | **2 min 07 s** | < 5 min for full 20 pts (max: 60 min) | **PASS (20/20 Pts)** |
 | **Effective Inference Throughput** | ~120 frames/sec | — | Exceptional |
 | **Peak GPU Memory Footprint** | **1.62 GB** | 16 GB | **PASS (10.1% of budget)** |
-| **Primary Checkpoint Size (`model_weights.pt`)** | **105.8 MB** | 5,000 MB (5 GB) | **PASS (2.1% of budget)** |
+| **Primary Checkpoint Size (`model_weights.pt`)** | **133.9 MB** | 5,000 MB (5 GB) | **PASS (2.7% of budget, Dual-Model Bundle)** |
 | **Reproducibility Test (Cold vs. Warm Run)** | 0 label flips | Maximum stability | **PASS** |
 
 ---
